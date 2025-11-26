@@ -25,7 +25,7 @@ Inicializar o projeto .NET para o Video Enricher Service, configurar acesso a da
 - Consumidor para `SongCreatedEvent`.
 
 ## Subtarefas
-- [ ] 4.1 Inicializar projeto .NET (`dotnet new webapi` ou `worker`).
+- [ ] 4.1 Inicializar projeto .NET (`dotnet new webapi` ou `worker`) no diretório `video-enricher`.
 - [ ] 4.2 Configurar EF Core com PostgreSQL (Connection String apontando para container da task 1.0).
 - [ ] 4.3 Criar entidade `VideoMetadata` e Migrations.
 - [ ] 4.4 Configurar MassTransit (ou biblioteca escolhida) para conectar ao RabbitMQ.

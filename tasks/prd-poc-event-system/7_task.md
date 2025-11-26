@@ -25,7 +25,7 @@ Criar aplicação React para cadastro de músicas e listagem com atualizações 
 - Consumo de SSE.
 
 ## Subtarefas
-- [ ] 7.1 Inicializar projeto React.
+- [ ] 7.1 Inicializar projeto React no diretório `frontend`.
 - [ ] 7.2 Criar serviço de API (Axios/Fetch) para `POST /songs` e `GET /songs`.
 - [ ] 7.3 Implementar Tela de Cadastro (Campos: Título, Artista, Data, Gênero).
 - [ ] 7.4 Implementar Tela de Listagem (Exibir todos os campos + Status).

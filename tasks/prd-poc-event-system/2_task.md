@@ -26,7 +26,7 @@ Inicializar o projeto Spring Boot para o Music Service, configurar a conexão co
 - Controller REST para `POST /songs` e `GET /songs`.
 
 ## Subtarefas
-- [ ] 2.1 Inicializar projeto Spring Boot (via Spring Initializr ou manual).
+- [ ] 2.1 Inicializar projeto Spring Boot (via Spring Initializr ou manual) no diretório `music-service`.
 - [ ] 2.2 Configurar `application.properties`/`yaml` com conexão ao Postgres (container criado na task 1.0).
 - [ ] 2.3 Criar entidade JPA `Song` com mapeamento correto (incluindo Enum para Status).
 - [ ] 2.4 Criar `SongRepository` (interface JpaRepository).
