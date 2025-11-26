@@ -1,5 +1,5 @@
 ---
-status: pending
+status: done
 parallelizable: true
 blocked_by: ["1.0"]
 ---
@@ -25,13 +25,13 @@ Inicializar o projeto .NET para o Video Enricher Service, configurar acesso a da
 - Consumidor para `SongCreatedEvent`.
 
 ## Subtarefas
-- [ ] 4.1 Inicializar projeto .NET (`dotnet new webapi` ou `worker`) no diretório `video-enricher`.
-- [ ] 4.2 Configurar EF Core com PostgreSQL (Connection String apontando para container da task 1.0).
-- [ ] 4.3 Criar entidade `VideoMetadata` e Migrations.
-- [ ] 4.4 Configurar MassTransit (ou biblioteca escolhida) para conectar ao RabbitMQ.
-- [ ] 4.5 Criar classe de evento `SongCreatedEvent` (contrato idêntico ao Java).
-- [ ] 4.6 Implementar `SongCreatedConsumer` para ler mensagens da fila.
-- [ ] 4.7 Adicionar Dockerfile para o serviço .NET.
+- [x] 4.1 Inicializar projeto .NET (`dotnet new webapi` ou `worker`) no diretório `video-enricher`. ✅
+- [x] 4.2 Configurar EF Core com PostgreSQL (Connection String apontando para container da task 1.0). ✅
+- [x] 4.3 Criar entidade `VideoMetadata` e Migrations. ✅
+- [x] 4.4 Configurar RabbitMQ.Client para conectar ao RabbitMQ. ✅
+- [x] 4.5 Criar classe de evento `SongCreatedEvent` (contrato idêntico ao Java). ✅
+- [x] 4.6 Implementar `RabbitMqConsumerService` para ler mensagens da fila. ✅
+- [x] 4.7 Adicionar Dockerfile para o serviço .NET. ✅
 
 ## Sequenciamento
 - Bloqueado por: 1.0
