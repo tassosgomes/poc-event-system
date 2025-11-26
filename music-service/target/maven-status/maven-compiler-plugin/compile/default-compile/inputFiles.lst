@@ -1,0 +1,8 @@
+/home/tsgomes/github-tassosgomes/poc-event-system/music-service/src/main/java/com/music/service/controller/SongController.java
+/home/tsgomes/github-tassosgomes/poc-event-system/music-service/src/main/java/com/music/service/domain/Song.java
+/home/tsgomes/github-tassosgomes/poc-event-system/music-service/src/main/java/com/music/service/domain/SongStatus.java
+/home/tsgomes/github-tassosgomes/poc-event-system/music-service/src/main/java/com/music/service/repository/SongRepository.java
+/home/tsgomes/github-tassosgomes/poc-event-system/music-service/src/main/java/com/music/service/dto/SongResponse.java
+/home/tsgomes/github-tassosgomes/poc-event-system/music-service/src/main/java/com/music/service/service/SongService.java
+/home/tsgomes/github-tassosgomes/poc-event-system/music-service/src/main/java/com/music/service/dto/SongRequest.java
+/home/tsgomes/github-tassosgomes/poc-event-system/music-service/src/main/java/com/music/service/MusicServiceApplication.java

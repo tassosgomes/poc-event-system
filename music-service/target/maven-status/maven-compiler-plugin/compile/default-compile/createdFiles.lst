@@ -1,0 +1,10 @@
+com/music/service/dto/SongResponse.class
+com/music/service/service/SongService.class
+com/music/service/controller/SongController.class
+com/music/service/dto/SongRequest.class
+com/music/service/dto/SongResponse$SongResponseBuilder.class
+com/music/service/repository/SongRepository.class
+com/music/service/domain/SongStatus.class
+com/music/service/domain/Song$SongBuilder.class
+com/music/service/MusicServiceApplication.class
+com/music/service/domain/Song.class

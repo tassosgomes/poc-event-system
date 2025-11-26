@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 parallelizable: true
 blocked_by: ["1.0"]
 ---
@@ -26,14 +26,14 @@ Inicializar o projeto Spring Boot para o Music Service, configurar a conexão co
 - Controller REST para `POST /songs` e `GET /songs`.
 
 ## Subtarefas
-- [ ] 2.1 Inicializar projeto Spring Boot (via Spring Initializr ou manual) no diretório `music-service`.
-- [ ] 2.2 Configurar `application.properties`/`yaml` com conexão ao Postgres (container criado na task 1.0).
-- [ ] 2.3 Criar entidade JPA `Song` com mapeamento correto (incluindo Enum para Status).
-- [ ] 2.4 Criar `SongRepository` (interface JpaRepository).
-- [ ] 2.5 Implementar `SongService` com métodos `createSong` e `listSongs`.
-- [ ] 2.6 Implementar `SongController` com endpoints REST.
-- [ ] 2.7 Criar testes unitários para Service e Controller.
-- [ ] 2.8 Adicionar Dockerfile para o serviço Java.
+- [x] 2.1 Inicializar projeto Spring Boot (via Spring Initializr ou manual) no diretório `music-service`.
+- [x] 2.2 Configurar `application.properties`/`yaml` com conexão ao Postgres (container criado na task 1.0).
+- [x] 2.3 Criar entidade JPA `Song` com mapeamento correto (incluindo Enum para Status).
+- [x] 2.4 Criar `SongRepository` (interface JpaRepository).
+- [x] 2.5 Implementar `SongService` com métodos `createSong` e `listSongs`.
+- [x] 2.6 Implementar `SongController` com endpoints REST.
+- [x] 2.7 Criar testes unitários para Service e Controller.
+- [x] 2.8 Adicionar Dockerfile para o serviço Java.
 
 ## Sequenciamento
 - Bloqueado por: 1.0
@@ -50,3 +50,10 @@ Inicializar o projeto Spring Boot para o Music Service, configurar a conexão co
 - Endpoint `POST /songs` cria registro no banco com status PENDING.
 - Endpoint `GET /songs` retorna lista de músicas cadastradas.
 - Testes unitários passando.
+
+- [x] 2.0 Implementação do Music Service (Java/Spring Boot) - Core & API ✅ CONCLUÍDA
+  - [x] 2.1 Implementação completada
+  - [x] 2.2 Definição da tarefa, PRD e tech spec validados
+  - [x] 2.3 Análise de regras e conformidade verificadas
+  - [x] 2.4 Revisão de código completada
+  - [x] 2.5 Pronto para deploy
