@@ -425,3 +425,6 @@ templates
 # Project specific
 postgres_music_data/
 postgres_video_data/
+
+# Java / Maven
+**/target/

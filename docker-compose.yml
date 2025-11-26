@@ -69,6 +69,22 @@ services:
     networks:
       - app-network
 
+  video-enricher:
+    build: ./video-enricher
+    container_name: video-enricher
+    ports:
+      - "8082:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres-video;Database=video_db;Username=video_user;Password=video_password
+      - ConnectionStrings__RabbitMq=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres-video:
+        condition: service_healthy
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
