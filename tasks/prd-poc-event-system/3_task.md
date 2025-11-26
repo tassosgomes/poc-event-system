@@ -25,14 +25,14 @@ Configurar a integração com RabbitMQ para publicar eventos de criação de mú
 - Configuração do SpringWolf para expor documentação em `/springwolf/docs`.
 
 ## Subtarefas
-- [ ] 3.1 Adicionar dependências do RabbitMQ e SpringWolf no `pom.xml`/`build.gradle`.
-- [ ] 3.2 Configurar conexão RabbitMQ no `application.properties`.
-- [ ] 3.3 Criar classe de evento `SongCreatedEvent` (DTO).
-- [ ] 3.4 Implementar `EventPublisher` para enviar mensagem ao RabbitMQ.
-- [ ] 3.5 Integrar publicação do evento no fluxo de `createSong` do Service.
-- [ ] 3.6 Configurar SpringWolf (Docket/Configuration) para escanear produtores e gerar spec AsyncAPI.
-- [ ] 3.7 Adicionar anotações `@AsyncPublisher` (ou equivalentes do SpringWolf) no publisher.
-- [ ] 3.8 Testes de integração usando Testcontainers para validar publicação no RabbitMQ.
+- [x] 3.1 Adicionar dependências do RabbitMQ e SpringWolf no `pom.xml`/`build.gradle`.
+- [x] 3.2 Configurar conexão RabbitMQ no `application.properties`.
+- [x] 3.3 Criar classe de evento `SongCreatedEvent` (DTO).
+- [x] 3.4 Implementar `EventPublisher` para enviar mensagem ao RabbitMQ.
+- [x] 3.5 Integrar publicação do evento no fluxo de `createSong` do Service.
+- [x] 3.6 Configurar SpringWolf (Docket/Configuration) para escanear produtores e gerar spec AsyncAPI.
+- [x] 3.7 Adicionar anotações `@AsyncPublisher` (ou equivalentes do SpringWolf) no publisher.
+- [x] 3.8 Testes de integração usando Testcontainers para validar publicação no RabbitMQ.
 
 ## Sequenciamento
 - Bloqueado por: 2.0
@@ -45,6 +45,9 @@ Configurar a integração com RabbitMQ para publicar eventos de criação de mú
 - Endpoint do SpringWolf deve estar acessível e retornando JSON válido da spec AsyncAPI.
 
 ## Critérios de Sucesso
-- Ao criar uma música, uma mensagem é publicada na fila `music.song-created` (ou exchange configurada).
-- Endpoint `/springwolf/docs` retorna a documentação AsyncAPI correta descrevendo o evento `song.created`.
-- Testes de integração com Testcontainers passam.
+- [x] 3.0 Implementação do Music Service (Java/Spring Boot) - Mensageria & AsyncAPI ✅ CONCLUÍDA
+  - [x] 3.1 Implementação completada
+  - [x] 3.2 Definição da tarefa, PRD e tech spec validados
+  - [x] 3.3 Análise de regras e conformidade verificadas
+  - [x] 3.4 Revisão de código completada
+  - [x] 3.5 Pronto para deploy

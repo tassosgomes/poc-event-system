@@ -2,6 +2,7 @@ package com.music.service.service;
 
 import com.music.service.domain.Song;
 import com.music.service.domain.SongStatus;
+import com.music.service.domain.event.SongCreatedEvent;
 import com.music.service.dto.SongRequest;
 import com.music.service.dto.SongResponse;
 import com.music.service.repository.SongRepository;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 public class SongService {
 
     private final SongRepository songRepository;
+    private final SongEventPublisher songEventPublisher;
 
     @Transactional
     public SongResponse createSong(SongRequest request) {
@@ -29,6 +31,17 @@ public class SongService {
                 .build();
 
         Song savedSong = songRepository.save(song);
+
+        SongCreatedEvent event = SongCreatedEvent.builder()
+                .songId(savedSong.getId())
+                .title(savedSong.getTitle())
+                .artist(savedSong.getArtist())
+                .releaseDate(savedSong.getReleaseDate())
+                .genre(savedSong.getGenre())
+                .build();
+        
+        songEventPublisher.publishSongCreatedEvent(event);
+
         return mapToResponse(savedSong);
     }
 
