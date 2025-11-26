@@ -2,6 +2,7 @@ package com.music.service.service;
 
 import com.music.service.domain.Song;
 import com.music.service.domain.SongStatus;
+import com.music.service.domain.event.VideoFoundEvent;
 import com.music.service.dto.SongRequest;
 import com.music.service.dto.SongResponse;
 import com.music.service.repository.SongRepository;
@@ -13,17 +14,24 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SongServiceTest {
 
     @Mock
     private SongRepository songRepository;
+
+    @Mock
+    private SongEventPublisher songEventPublisher;
+
+    @Mock
+    private SongStreamService songStreamService;
 
     @InjectMocks
     private SongService songService;
@@ -70,5 +78,50 @@ class SongServiceTest {
 
         assertFalse(responses.isEmpty());
         assertEquals(1, responses.size());
+    }
+
+    @Test
+    void processVideoFoundEvent_ShouldUpdateSongAndNotify() {
+        UUID songId = UUID.randomUUID();
+        Song existingSong = Song.builder()
+                .id(songId)
+                .title("Song")
+                .artist("Artist")
+                .status(SongStatus.PENDING)
+                .build();
+
+        VideoFoundEvent event = VideoFoundEvent.builder()
+                .songId(songId)
+                .videoUrl("https://youtube.com/watch?v=123")
+                .views(1000L)
+                .build();
+
+        when(songRepository.findById(songId)).thenReturn(Optional.of(existingSong));
+        when(songRepository.save(existingSong)).thenReturn(existingSong);
+
+        songService.processVideoFoundEvent(event);
+
+        assertEquals("https://youtube.com/watch?v=123", existingSong.getVideoUrl());
+        assertEquals(1000L, existingSong.getViews());
+        assertEquals(SongStatus.COMPLETED, existingSong.getStatus());
+        verify(songRepository).save(existingSong);
+        verify(songStreamService).broadcastSongUpdate(any(SongResponse.class));
+    }
+
+    @Test
+    void processVideoFoundEvent_ShouldIgnoreWhenSongDoesNotExist() {
+        UUID songId = UUID.randomUUID();
+        VideoFoundEvent event = VideoFoundEvent.builder()
+                .songId(songId)
+                .videoUrl("url")
+                .views(10L)
+                .build();
+
+        when(songRepository.findById(songId)).thenReturn(Optional.empty());
+
+        songService.processVideoFoundEvent(event);
+
+        verify(songRepository, never()).save(any(Song.class));
+        verifyNoInteractions(songStreamService);
     }
 }

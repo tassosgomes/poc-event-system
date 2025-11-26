@@ -1,5 +1,5 @@
 ---
-status: pending
+status: done
 parallelizable: false
 blocked_by: ["3.0", "5.0"]
 ---
@@ -24,13 +24,13 @@ Implementar o consumo do evento de retorno (`VideoFoundEvent`) no serviço Java,
 - Implementação de SSE (`SseEmitter`) para push de atualizações.
 
 ## Subtarefas
-- [ ] 6.1 Criar DTO `VideoFoundEvent` no projeto Java.
-- [ ] 6.2 Implementar `VideoFoundListener` (`@RabbitListener`).
-- [ ] 6.3 Atualizar `SongService` para processar o evento e atualizar o DB.
-- [ ] 6.4 Implementar gerenciador de sessões SSE (lista de Emitters ativos).
-- [ ] 6.5 Criar endpoint `/songs/stream` no Controller.
-- [ ] 6.6 Disparar evento SSE para todos os clientes conectados quando uma música for atualizada.
-- [ ] 6.7 Atualizar documentação SpringWolf para incluir o Listener (consumidor).
+- [x] 6.1 Criar DTO `VideoFoundEvent` no projeto Java. ✅
+- [x] 6.2 Implementar `VideoFoundListener` (`@RabbitListener`). ✅
+- [x] 6.3 Atualizar `SongService` para processar o evento e atualizar o DB. ✅
+- [x] 6.4 Implementar gerenciador de sessões SSE (lista de Emitters ativos). ✅
+- [x] 6.5 Criar endpoint `/songs/stream` no Controller. ✅
+- [x] 6.6 Disparar evento SSE para todos os clientes conectados quando uma música for atualizada. ✅
+- [x] 6.7 Atualizar documentação SpringWolf para incluir o Listener (consumidor). ✅
 
 ## Sequenciamento
 - Bloqueado por: 3.0, 5.0 (depende do contrato do evento definido no .NET)

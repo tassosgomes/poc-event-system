@@ -1,69 +1,69 @@
 package com.music.service.integration;
 
+import com.music.service.domain.Song;
 import com.music.service.domain.event.SongCreatedEvent;
 import com.music.service.dto.SongRequest;
+import com.music.service.repository.SongRepository;
 import com.music.service.service.SongService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.containers.RabbitMQContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest
-@Testcontainers
-public class SongEventIntegrationTest {
-
-    @Container
-    static RabbitMQContainer rabbitMQ = new RabbitMQContainer("rabbitmq:3.12-management");
-
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.rabbitmq.host", rabbitMQ::getHost);
-        registry.add("spring.rabbitmq.port", rabbitMQ::getAmqpPort);
-        registry.add("spring.rabbitmq.username", rabbitMQ::getAdminUsername);
-        registry.add("spring.rabbitmq.password", rabbitMQ::getAdminPassword);
-
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-    }
+@TestPropertySource(properties = {
+        "spring.datasource.url=jdbc:h2:mem:music-db;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
+        "spring.datasource.driver-class-name=org.h2.Driver",
+        "spring.datasource.username=sa",
+        "spring.datasource.password=",
+    "spring.jpa.hibernate.ddl-auto=create-drop",
+    "spring.rabbitmq.listener.simple.auto-startup=false",
+    "spring.rabbitmq.listener.direct.auto-startup=false"
+})
+class SongEventIntegrationTest {
 
     @Autowired
     private SongService songService;
 
     @Autowired
+    private SongRepository songRepository;
+
+    @MockBean
     private RabbitTemplate rabbitTemplate;
 
+    @BeforeEach
+    void cleanDatabase() {
+        songRepository.deleteAll();
+    }
+
     @Test
-    void createSong_ShouldPublishEventToRabbitMQ() {
-        // Arrange
+    void createSong_ShouldPersistAndPublishEvent() {
         SongRequest request = new SongRequest();
         request.setTitle("Integration Test Song");
         request.setArtist("Integration Artist");
         request.setReleaseDate(LocalDate.now());
         request.setGenre("Integration Genre");
 
-        // Act
         songService.createSong(request);
 
-        // Assert
-        // We can consume from the queue to verify
-        Object message = rabbitTemplate.receiveAndConvert("music.song-created", 5000);
-        assertThat(message).isNotNull();
-        assertThat(message).isInstanceOf(SongCreatedEvent.class);
-        SongCreatedEvent event = (SongCreatedEvent) message;
+        List<Song> songs = songRepository.findAll();
+        assertThat(songs).hasSize(1);
+
+        ArgumentCaptor<SongCreatedEvent> eventCaptor = ArgumentCaptor.forClass(SongCreatedEvent.class);
+        verify(rabbitTemplate).convertAndSend(eq("music.events"), eq("song.created"), eventCaptor.capture());
+        SongCreatedEvent event = eventCaptor.getValue();
         assertThat(event.getTitle()).isEqualTo("Integration Test Song");
+        assertThat(event.getArtist()).isEqualTo("Integration Artist");
     }
 }

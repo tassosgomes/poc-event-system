@@ -5,12 +5,14 @@ import com.music.service.domain.SongStatus;
 import com.music.service.dto.SongRequest;
 import com.music.service.dto.SongResponse;
 import com.music.service.service.SongService;
+import com.music.service.service.SongStreamService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -31,6 +33,9 @@ class SongControllerTest {
 
     @MockBean
     private SongService songService;
+
+    @MockBean
+    private SongStreamService songStreamService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -64,6 +69,14 @@ class SongControllerTest {
         when(songService.listSongs()).thenReturn(List.of());
 
         mockMvc.perform(get("/songs"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void streamSongs_ShouldReturnEmitter() throws Exception {
+        when(songStreamService.registerEmitter()).thenReturn(new SseEmitter());
+
+        mockMvc.perform(get("/songs/stream"))
                 .andExpect(status().isOk());
     }
 }
