@@ -2,7 +2,10 @@ using System.Text;
 using System.Text.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using VideoEnricher.Data;
+using VideoEnricher.Domain;
 using VideoEnricher.Domain.Event;
+using VideoEnricher.Services;
 
 namespace VideoEnricher.Messaging;
 
@@ -11,6 +14,7 @@ public class RabbitMqConsumerService : BackgroundService
     private readonly ILogger<RabbitMqConsumerService> _logger;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly RabbitMqSettings _settings;
+    private readonly IRabbitMqPublisherService _publisherService;
     private IConnection? _connection;
     private IChannel? _channel;
 
@@ -20,11 +24,13 @@ public class RabbitMqConsumerService : BackgroundService
     public RabbitMqConsumerService(
         ILogger<RabbitMqConsumerService> logger,
         IServiceScopeFactory scopeFactory,
-        RabbitMqSettings settings)
+        RabbitMqSettings settings,
+        IRabbitMqPublisherService publisherService)
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
         _settings = settings;
+        _publisherService = publisherService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -150,8 +156,54 @@ public class RabbitMqConsumerService : BackgroundService
             eventoMusicaCriada.Artist,
             eventoMusicaCriada.Genre);
 
-        // Lógica a ser implementada nas próximas tarefas (scraping, etc.)
-        await Task.CompletedTask;
+        using var scope = _scopeFactory.CreateScope();
+        var scraperService = scope.ServiceProvider.GetRequiredService<IYouTubeScraperService>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<VideoEnricherDbContext>();
+
+        // 1. Realizar scraping do YouTube
+        var scrapingResult = await scraperService.SearchVideoAsync(
+            eventoMusicaCriada.Artist, 
+            eventoMusicaCriada.Title, 
+            cancellationToken);
+
+        if (scrapingResult == null)
+        {
+            _logger.LogWarning(
+                "Nenhum vídeo encontrado para SongId={SongId}, Artist={Artist}, Title={Title}",
+                eventoMusicaCriada.SongId,
+                eventoMusicaCriada.Artist,
+                eventoMusicaCriada.Title);
+            return;
+        }
+
+        // 2. Persistir resultado no banco de dados
+        var videoMetadata = new VideoMetadata
+        {
+            Id = Guid.NewGuid(),
+            SongId = eventoMusicaCriada.SongId,
+            VideoUrl = scrapingResult.VideoUrl,
+            Views = scrapingResult.Views,
+            ScrapedAt = DateTime.UtcNow
+        };
+
+        dbContext.VideoMetadata.Add(videoMetadata);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "VideoMetadata persistido: Id={Id}, SongId={SongId}, VideoUrl={VideoUrl}",
+            videoMetadata.Id,
+            videoMetadata.SongId,
+            videoMetadata.VideoUrl);
+
+        // 3. Publicar evento VideoFoundEvent
+        var videoFoundEvent = new VideoFoundEvent
+        {
+            SongId = eventoMusicaCriada.SongId,
+            VideoUrl = scrapingResult.VideoUrl,
+            Views = scrapingResult.Views
+        };
+
+        await _publisherService.PublishVideoFoundEventAsync(videoFoundEvent, cancellationToken);
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)

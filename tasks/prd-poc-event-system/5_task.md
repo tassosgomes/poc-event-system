@@ -1,5 +1,5 @@
 ---
-status: pending
+status: done
 parallelizable: false
 blocked_by: ["4.0"]
 ---
@@ -24,13 +24,13 @@ Implementar a lógica de scraping do YouTube, persistência do vídeo encontrado
 - Integração com Neuroglia.AsyncAPI para documentação Code-First.
 
 ## Subtarefas
-- [ ] 5.1 Implementar `YouTubeScraperService` (busca HTML e extrai link/views).
-- [ ] 5.2 Atualizar `SongCreatedConsumer` para chamar o Scraper.
-- [ ] 5.3 Persistir resultado no banco de dados do .NET.
-- [ ] 5.4 Criar evento `VideoFoundEvent` e publicar no RabbitMQ após sucesso.
-- [ ] 5.5 Configurar Neuroglia.AsyncAPI para gerar documentação v3 baseada no código.
-- [ ] 5.6 Expor endpoint `/asyncapi/docs` com a spec gerada.
-- [ ] 5.7 Testes unitários para o Scraper (mockando resposta HTTP).
+- [x] 5.1 Implementar `YouTubeScraperService` (busca HTML e extrai link/views). ✅
+- [x] 5.2 Atualizar `SongCreatedConsumer` para chamar o Scraper. ✅
+- [x] 5.3 Persistir resultado no banco de dados do .NET. ✅
+- [x] 5.4 Criar evento `VideoFoundEvent` e publicar no RabbitMQ após sucesso. ✅
+- [x] 5.5 Configurar Neuroglia.AsyncAPI para gerar documentação v3 baseada no código. ✅
+- [x] 5.6 Expor endpoint `/asyncapi/docs` com a spec gerada. ✅
+- [x] 5.7 Testes unitários para o Scraper (mockando resposta HTTP). ✅
 
 ## Sequenciamento
 - Bloqueado por: 4.0
