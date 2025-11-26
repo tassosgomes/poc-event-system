@@ -421,4 +421,7 @@ FodyWeavers.xsd
 .github
 rules
 templates
-tasks
+
+# Project specific
+postgres_music_data/
+postgres_video_data/
