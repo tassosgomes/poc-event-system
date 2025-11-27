@@ -1,9 +1,6 @@
 using System.Text.Json.Nodes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Neuroglia.AsyncApi;
-using Neuroglia.AsyncApi.FluentBuilders;
-using Neuroglia.AsyncApi.v3;
 using VideoEnricher.Data;
 using VideoEnricher.Messaging;
 using VideoEnricher.Services;
@@ -26,9 +23,6 @@ builder.Services.AddHostedService<RabbitMqConsumerService>();
 // Registrar HttpClient e YouTube Scraper Service
 builder.Services.AddHttpClient<IYouTubeScraperService, YouTubeScraperService>();
 
-// Configurar AsyncAPI com Neuroglia
-builder.Services.AddAsyncApi();
-
 // Adicionar health checks
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!);
@@ -46,8 +40,25 @@ if (app.Environment.IsDevelopment())
 // Health check endpoint
 app.MapHealthChecks("/health");
 
+JsonObject CloneSchema(JsonObject schema) => JsonNode.Parse(schema.ToJsonString())!.AsObject();
+
+JsonObject BuildMessage(string name, string title, string description, JsonObject schema) =>
+    new()
+    {
+        ["name"] = name,
+        ["title"] = title,
+        ["summary"] = description,
+        ["description"] = description,
+        ["contentType"] = "application/json",
+        ["payload"] = new JsonObject
+        {
+            ["schemaFormat"] = "application/schema+json",
+            ["schema"] = CloneSchema(schema)
+        }
+    };
+
 // Endpoint para documentação AsyncAPI v3
-app.MapGet("/asyncapi/docs", (IAsyncApiDocumentBuilder documentBuilder) =>
+app.MapGet("/asyncapi/docs", () =>
 {
     // Schema para SongCreatedEvent
     var songCreatedSchema = new JsonObject
@@ -77,56 +88,112 @@ app.MapGet("/asyncapi/docs", (IAsyncApiDocumentBuilder documentBuilder) =>
         ["required"] = new JsonArray { "songId", "videoUrl", "views" }
     };
 
-    var document = documentBuilder
-        .UsingAsyncApiV3()
-        .WithTitle("Video Enricher API")
-        .WithVersion("1.0.0")
-        .WithDescription("API de enriquecimento de vídeos que consome eventos de músicas criadas e publica eventos de vídeos encontrados no YouTube")
-        .WithTermsOfService(new Uri("https://github.com/tassosgomes/poc-event-system"))
-        .WithLicense("Apache 2.0", new Uri("https://www.apache.org/licenses/LICENSE-2.0"))
-        .WithServer("rabbitmq", server => server
-            .WithHost("rabbitmq:5672")
-            .WithProtocol(AsyncApiProtocol.Amqp, "0.9.1")
-            .WithDescription("RabbitMQ Message Broker para comunicação assíncrona entre serviços"))
-        .WithChannel("songCreated", channel => channel
-            .WithServer("#/servers/rabbitmq")
-            .WithAddress("music.song-created")
-            .WithDescription("Canal para receber eventos de músicas criadas pelo Music Service"))
-        .WithChannel("videoFound", channel => channel
-            .WithServer("#/servers/rabbitmq")
-            .WithAddress("music.video-found")
-            .WithDescription("Canal para publicar eventos quando um vídeo é encontrado no YouTube"))
-        .WithOperation("receiveSongCreated", operation => operation
-            .WithAction(V3OperationAction.Receive)
-            .WithChannel("#/channels/songCreated")
-            .WithTitle("Receber Música Criada")
-            .WithDescription("Recebe evento quando uma nova música é cadastrada no Music Service")
-            .WithMessage("#/components/messages/SongCreatedEvent"))
-        .WithOperation("sendVideoFound", operation => operation
-            .WithAction(V3OperationAction.Send)
-            .WithChannel("#/channels/videoFound")
-            .WithTitle("Publicar Vídeo Encontrado")
-            .WithDescription("Publica evento quando um vídeo é encontrado no YouTube para uma música")
-            .WithMessage("#/components/messages/VideoFoundEvent"))
-        .WithMessageComponent("SongCreatedEvent", message => message
-            .WithName("SongCreatedEvent")
-            .WithTitle("Evento de Música Criada")
-            .WithContentType("application/json")
-            .WithPayloadSchema(schema => schema
-                .WithFormat("application/schema+json")
-                .WithSchema(songCreatedSchema))
-            .WithDescription("Evento emitido pelo Music Service quando uma nova música é cadastrada"))
-        .WithMessageComponent("VideoFoundEvent", message => message
-            .WithName("VideoFoundEvent")
-            .WithTitle("Evento de Vídeo Encontrado")
-            .WithContentType("application/json")
-            .WithPayloadSchema(schema => schema
-                .WithFormat("application/schema+json")
-                .WithSchema(videoFoundSchema))
-            .WithDescription("Evento emitido quando um vídeo do YouTube é encontrado e associado a uma música"))
-        .Build();
+    var videoFoundMessage = BuildMessage(
+        "VideoFoundEvent",
+        "Evento de Vídeo Encontrado",
+        "Evento emitido quando um vídeo do YouTube é encontrado e associado a uma música",
+        videoFoundSchema);
 
-    return Results.Ok(document);
+    var songCreatedMessage = BuildMessage(
+        "SongCreatedEvent",
+        "Evento de Música Criada",
+        "Evento emitido pelo Music Service quando uma nova música é cadastrada",
+        songCreatedSchema);
+
+    var asyncApiDocument = new JsonObject
+    {
+        ["asyncapi"] = "3.0.0",
+        ["id"] = "urn:com:poc-event-system:video-enricher",
+        ["info"] = new JsonObject
+        {
+            ["title"] = "Video Enricher API",
+            ["version"] = "1.0.0",
+            ["summary"] = "Documentação AsyncAPI do serviço de enriquecimento de vídeos",
+            ["description"] = "API de enriquecimento de vídeos que consome eventos de músicas criadas e publica eventos de vídeos encontrados no YouTube",
+            ["termsOfService"] = "https://github.com/tassosgomes/poc-event-system",
+            ["license"] = new JsonObject
+            {
+                ["name"] = "Apache 2.0",
+                ["url"] = "https://www.apache.org/licenses/LICENSE-2.0"
+            }
+        },
+        ["defaultContentType"] = "application/json",
+        ["servers"] = new JsonObject
+        {
+            ["rabbitmq"] = new JsonObject
+            {
+                ["host"] = "rabbitmq:5672",
+                ["protocol"] = "amqp",
+                ["protocolVersion"] = "0.9.1",
+                ["description"] = "RabbitMQ Message Broker para comunicação assíncrona entre serviços",
+                ["bindings"] = new JsonObject()
+            }
+        },
+        ["channels"] = new JsonObject
+        {
+            ["songCreated"] = new JsonObject
+            {
+                ["address"] = "music.song-created",
+                ["description"] = "Canal para receber eventos de músicas criadas pelo Music Service",
+                ["servers"] = new JsonArray { "rabbitmq" },
+                ["messages"] = new JsonObject
+                {
+                    ["SongCreatedEvent"] = new JsonObject
+                    {
+                        ["$ref"] = "#/components/messages/SongCreatedEvent"
+                    }
+                }
+            },
+            ["videoFound"] = new JsonObject
+            {
+                ["address"] = "music.video-found",
+                ["description"] = "Canal para publicar eventos quando um vídeo é encontrado no YouTube",
+                ["servers"] = new JsonArray { "rabbitmq" },
+                ["messages"] = new JsonObject
+                {
+                    ["VideoFoundEvent"] = new JsonObject
+                    {
+                        ["$ref"] = "#/components/messages/VideoFoundEvent"
+                    }
+                }
+            }
+        },
+        ["operations"] = new JsonObject
+        {
+            ["receiveSongCreated"] = new JsonObject
+            {
+                ["action"] = "receive",
+                ["summary"] = "Recebe evento de música criada",
+                ["description"] = "Recebe evento quando uma nova música é cadastrada no Music Service",
+                ["channel"] = "songCreated",
+                ["messages"] = new JsonArray
+                {
+                    new JsonObject { ["$ref"] = "#/components/messages/SongCreatedEvent" }
+                }
+            },
+            ["sendVideoFound"] = new JsonObject
+            {
+                ["action"] = "send",
+                ["summary"] = "Publica evento de vídeo encontrado",
+                ["description"] = "Publica evento quando um vídeo é encontrado no YouTube para uma música",
+                ["channel"] = "videoFound",
+                ["messages"] = new JsonArray
+                {
+                    new JsonObject { ["$ref"] = "#/components/messages/VideoFoundEvent" }
+                }
+            }
+        },
+        ["components"] = new JsonObject
+        {
+            ["messages"] = new JsonObject
+            {
+                ["SongCreatedEvent"] = songCreatedMessage,
+                ["VideoFoundEvent"] = videoFoundMessage
+            }
+        }
+    };
+
+    return Results.Json(asyncApiDocument);
 }).WithName("AsyncApiDocs")
   .WithTags("AsyncAPI")
   .WithDescription("Retorna a documentação AsyncAPI v3 do Video Enricher Service");

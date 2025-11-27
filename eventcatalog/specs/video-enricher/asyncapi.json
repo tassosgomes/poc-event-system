@@ -1,0 +1,148 @@
+{
+  "asyncapi": "3.0.0",
+  "id": "urn:com:poc-event-system:video-enricher",
+  "info": {
+    "title": "Video Enricher API",
+    "version": "1.0.0",
+    "summary": "Documentação AsyncAPI do serviço de enriquecimento de vídeos",
+    "description": "API de enriquecimento de vídeos que consome eventos de músicas criadas e publica eventos de vídeos encontrados no YouTube",
+    "termsOfService": "https://github.com/tassosgomes/poc-event-system",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    }
+  },
+  "defaultContentType": "application/json",
+  "servers": {
+    "rabbitmq": {
+      "host": "rabbitmq:5672",
+      "protocol": "amqp",
+      "protocolVersion": "0.9.1",
+      "description": "RabbitMQ Message Broker para comunicação assíncrona entre serviços",
+      "bindings": {}
+    }
+  },
+  "channels": {
+    "songCreated": {
+      "address": "music.song-created",
+      "description": "Canal para receber eventos de músicas criadas pelo Music Service",
+      "servers": [
+        "rabbitmq"
+      ],
+      "messages": {
+        "SongCreatedEvent": {
+          "$ref": "#/components/messages/SongCreatedEvent"
+        }
+      }
+    },
+    "videoFound": {
+      "address": "music.video-found",
+      "description": "Canal para publicar eventos quando um vídeo é encontrado no YouTube",
+      "servers": [
+        "rabbitmq"
+      ],
+      "messages": {
+        "VideoFoundEvent": {
+          "$ref": "#/components/messages/VideoFoundEvent"
+        }
+      }
+    }
+  },
+  "operations": {
+    "receiveSongCreated": {
+      "action": "receive",
+      "summary": "Recebe evento de música criada",
+      "description": "Recebe evento quando uma nova música é cadastrada no Music Service",
+      "channel": "songCreated",
+      "messages": [
+        {
+          "$ref": "#/components/messages/SongCreatedEvent"
+        }
+      ]
+    },
+    "sendVideoFound": {
+      "action": "send",
+      "summary": "Publica evento de vídeo encontrado",
+      "description": "Publica evento quando um vídeo é encontrado no YouTube para uma música",
+      "channel": "videoFound",
+      "messages": [
+        {
+          "$ref": "#/components/messages/VideoFoundEvent"
+        }
+      ]
+    }
+  },
+  "components": {
+    "messages": {
+      "SongCreatedEvent": {
+        "name": "SongCreatedEvent",
+        "title": "Evento de Música Criada",
+        "summary": "Evento emitido pelo Music Service quando uma nova música é cadastrada",
+        "description": "Evento emitido pelo Music Service quando uma nova música é cadastrada",
+        "contentType": "application/json",
+        "payload": {
+          "schemaFormat": "application/schema+json",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "songId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "title": {
+                "type": "string"
+              },
+              "artist": {
+                "type": "string"
+              },
+              "releaseDate": {
+                "type": "string",
+                "format": "date"
+              },
+              "genre": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "songId",
+              "title",
+              "artist"
+            ]
+          }
+        }
+      },
+      "VideoFoundEvent": {
+        "name": "VideoFoundEvent",
+        "title": "Evento de Vídeo Encontrado",
+        "summary": "Evento emitido quando um vídeo do YouTube é encontrado e associado a uma música",
+        "description": "Evento emitido quando um vídeo do YouTube é encontrado e associado a uma música",
+        "contentType": "application/json",
+        "payload": {
+          "schemaFormat": "application/schema+json",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "songId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "videoUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "views": {
+                "type": "integer",
+                "format": "int64"
+              }
+            },
+            "required": [
+              "songId",
+              "videoUrl",
+              "views"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

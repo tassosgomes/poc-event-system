@@ -1,0 +1,17 @@
+---
+id: SongCreatedEvent
+name: Song Created Payload
+summary: |
+  AsyncAPI schema synced from the Music Service for consumers that need to validate the creation event.
+schemaPath: ../../specs/music-service/asyncapi.yaml
+---
+
+| Field | Type | Required |
+| --- | --- | --- |
+| `songId` | string (uuid) | ✅ |
+| `title` | string | ✅ |
+| `artist` | string | ✅ |
+| `genre` | string | ❌ |
+| `releaseDate` | string (date) | ❌ |
+
+Refer to `specs/music-service/asyncapi.yaml#/components/messages/com.music.service.domain.event.SongCreatedEvent` for the canonical schema.

@@ -69,6 +69,28 @@ services:
     networks:
       - app-network
 
+  music-service:
+    build: ./music-service
+    container_name: music-service
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-music:5432/music_db
+      - SPRING_DATASOURCE_USERNAME=music_user
+      - SPRING_DATASOURCE_PASSWORD=music_password
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+      - SPRINGWOLF_DOCKET_SERVERS_RABBITMQ_URL=amqp://rabbitmq:5672
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres-music:
+        condition: service_healthy
+    networks:
+      - app-network
+
   video-enricher:
     build: ./video-enricher
     container_name: video-enricher
@@ -82,6 +104,36 @@ services:
         condition: service_healthy
       postgres-video:
         condition: service_healthy
+    networks:
+      - app-network
+
+  eventcatalog:
+    build:
+      context: ./eventcatalog
+      dockerfile: Dockerfile
+    container_name: eventcatalog
+    depends_on:
+      music-service:
+        condition: service_started
+      video-enricher:
+        condition: service_started
+    environment:
+      - PORT=3000
+      - MUSIC_SERVICE_ASYNCAPI_URL=${MUSIC_SERVICE_ASYNCAPI_URL:-http://music-service:8080/springwolf/docs}
+      - VIDEO_ENRICHER_ASYNCAPI_URL=${VIDEO_ENRICHER_ASYNCAPI_URL:-http://video-enricher:8080/asyncapi/docs}
+      - ASYNCAPI_SOURCE_URLS=${ASYNCAPI_SOURCE_URLS:-http://music-service:8080/springwolf/docs,http://video-enricher:8080/asyncapi/docs}
+      - MAX_WAIT_SECONDS=${EVENTCATALOG_MAX_WAIT_SECONDS:-180}
+      - WAIT_INTERVAL_SECONDS=${EVENTCATALOG_WAIT_INTERVAL_SECONDS:-5}
+      - EVENTCATALOG_SCALE_LICENSE_KEY=WYF8-JSN4-FB5X-1M7A-PZOG-R8ZK
+      - NODE_OPTIONS=--max-old-space-size=8192
+    ports:
+      - "${EVENTCATALOG_HOST_PORT:-8083}:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
     networks:
       - app-network
 

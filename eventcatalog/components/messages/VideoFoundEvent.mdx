@@ -1,0 +1,15 @@
+---
+id: VideoFoundEvent
+name: Video Found Payload
+summary: |
+  AsyncAPI schema produced by the Video Enricher describing the reply event for enriched videos.
+schemaPath: ../../specs/video-enricher/asyncapi.yaml
+---
+
+| Field | Type | Required |
+| --- | --- | --- |
+| `songId` | string (uuid) | ✅ |
+| `videoUrl` | string (uri) | ✅ |
+| `views` | integer | ✅ |
+
+See `specs/video-enricher/asyncapi.yaml#/components/messages/VideoFoundEvent` for the message bindings, summary, and metadata.

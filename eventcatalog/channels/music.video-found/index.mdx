@@ -1,0 +1,62 @@
+---
+id: music.video-found
+name: Video Found Events
+version: 1.0.0
+summary: |
+  Reply channel used by the Video Enricher to share the YouTube match for a song back to the Music Service or any analytics consumer.
+owners:
+  - tassosgomes
+address: music.video-found
+protocols:
+  - amqp
+schemaPath: ../../specs/video-enricher/asyncapi.yaml
+publishers:
+  - id: VideoEnricher
+    name: Video Enricher
+subscribers:
+  - id: MusicService
+    name: Music Service
+messages:
+  - collection: events
+    name: Video Found Event
+    id: VideoFoundEvent
+    version: 1.0.0
+---
+
+## Overview
+
+- Exchange: `music.events`
+- Routing Key: `video.found`
+- Queue example: `music.video-found`
+
+The message includes the YouTube URL plus the view count captured during scraping. Contract details live in the [Neuroglia-generated AsyncAPI](../../../specs/video-enricher/asyncapi.yaml).
+
+## Publishing Example (C#)
+
+```csharp
+var videoEvent = new VideoFoundEvent
+{
+    SongId = songId,
+    VideoUrl = youtubeMatch.Url,
+    Views = youtubeMatch.Views
+};
+
+await _publisher.PublishAsync("music.video-found", videoEvent);
+```
+
+## Consuming Example (Spring)
+
+```java
+@RabbitListener(queues = "music.video-found")
+public void handleVideoFound(VideoFoundEvent event) {
+    songService.processVideoFoundEvent(event);
+}
+```
+
+## Payload highlights
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `songId` | UUID | Correlates with the original SongCreated event |
+| `videoUrl` | URI | Canonical YouTube URL returned by the scraper |
+| `views` | integer | View counter at enrichment time |

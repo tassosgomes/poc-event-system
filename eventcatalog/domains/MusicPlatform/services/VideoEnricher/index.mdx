@@ -1,0 +1,44 @@
+---
+id: VideoEnricher
+version: 1.0.0
+name: Video Enricher Service
+summary: |
+  Minimal ASP.NET worker that listens to songs, enriches them with YouTube scraping, and replies with VideoFound events.
+owners:
+  - tassosgomes
+receives:
+  - id: SongCreatedEvent
+    version: 1.0.0
+sends:
+  - id: VideoFoundEvent
+    version: 1.0.0
+repository:
+  language: C#
+  url: https://github.com/tassosgomes/poc-event-system/tree/main/video-enricher
+specifications:
+  asyncapiPath: ../../../../specs/video-enricher/asyncapi.yaml
+---
+
+import Footer from '@catalog/components/footer.astro';
+
+## Responsibilities
+
+- Subscribe to `music.song-created` and fetch YouTube metadata for each song.
+- Persist enrichment state on PostgreSQL to avoid duplicate scrapes.
+- Publish `music.video-found` with the final video URL and view count snapshot.
+- Document contracts using `Neuroglia.AsyncAPI` to produce AsyncAPI v3 payloads.
+
+## Async Operations
+
+| Channel | Direction | Message |
+| --- | --- | --- |
+| `music.song-created` | Consume | `SongCreatedEvent` |
+| `music.video-found` | Publish | `VideoFoundEvent` |
+
+## Implementation Notes
+
+- `RabbitMqConsumerService` handles inbound events and delegates to `YouTubeScraperService` for metadata.
+- The AsyncAPI document is assembled programmatically in `Program.cs` and exposed at `/asyncapi/docs`.
+- Uses Entity Framework Core with automatic migrations at startup to keep the enrichment database up to date.
+
+<Footer />

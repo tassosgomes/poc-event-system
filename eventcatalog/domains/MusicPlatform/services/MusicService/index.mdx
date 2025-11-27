@@ -1,0 +1,46 @@
+---
+id: MusicService
+version: 1.0.0
+name: Music Service
+summary: |
+  Spring Boot service that owns the song catalog, exposes REST + SSE APIs, and coordinates outbound SongCreated events plus inbound VideoFound enrichments.
+owners:
+  - tassosgomes
+receives:
+  - id: VideoFoundEvent
+    version: 1.0.0
+sends:
+  - id: SongCreatedEvent
+    version: 1.0.0
+repository:
+  language: Java
+  url: https://github.com/tassosgomes/poc-event-system/tree/main/music-service
+specifications:
+  asyncapiPath: ../../../../specs/music-service/asyncapi.yaml
+---
+
+import Footer from '@catalog/components/footer.astro';
+
+## Responsibilities
+
+- Persist songs on PostgreSQL and expose CRUD via REST.
+- Stream live catalog updates to the frontend through SSE (`/api/songs/stream`).
+- Publish `music.song-created` to RabbitMQ whenever a new song is stored.
+- Consume `music.video-found` to merge enrichment metadata with existing songs.
+
+## Async Operations
+
+| Channel | Direction | Message |
+| --- | --- | --- |
+| `music.song-created` | Publish | `SongCreatedEvent` |
+| `music.video-found` | Consume | `VideoFoundEvent` |
+
+Both operations are annotated with SpringWolf (`@AsyncPublisher` / `@AsyncListener`) so the AsyncAPI document reflects bindings and payload schemas.
+
+## Architecture Notes
+
+- Uses `RabbitTemplate` for publishing with consistent exchange/routing key settings defined in `application.properties`.
+- Inbound events go through `VideoFoundListener`, which calls `SongService.processVideoFoundEvent` to update records and trigger SSE pushes.
+- Exchanges/queues are provisioned by Spring AMQP auto configuration; see `RabbitMQConfig` for naming conventions.
+
+<Footer />

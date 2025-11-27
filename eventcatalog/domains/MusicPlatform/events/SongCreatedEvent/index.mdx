@@ -1,0 +1,39 @@
+---
+id: SongCreatedEvent
+name: Song Created Event
+version: 1.0.0
+summary: |
+  Published by the Music Service when a new song enters the catalog so downstream systems can trigger enrichment flows.
+owners:
+  - tassosgomes
+producedBy:
+  - id: MusicService
+    name: Music Service
+consumedBy:
+  - id: VideoEnricher
+    name: Video Enricher
+channels:
+  - id: music.song-created
+    name: music.song-created
+specifications:
+  asyncapiPath: ../../../../specs/music-service/asyncapi.yaml
+---
+
+## Payload
+
+```json
+{
+  "songId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "title": "Explosive Groove",
+  "artist": "FlowMart All Stars",
+  "genre": "Jazz",
+  "releaseDate": "2024-03-24"
+}
+```
+
+- `songId` keeps the UUID that links SSE updates and enrichment workflows.
+- `releaseDate` is optional; defaults to the ingestion timestamp when not provided.
+
+## Contract Source
+
+The canonical schema lives in the AsyncAPI snapshot synced from SpringWolf. Inspect the [spec file](../../../../specs/music-service/asyncapi.yaml) or open `/channels/music.song-created/` for integration guidance.

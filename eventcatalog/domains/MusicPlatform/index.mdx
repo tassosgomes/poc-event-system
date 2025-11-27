@@ -1,0 +1,50 @@
+---
+id: MusicPlatform
+name: Music Platform
+version: 1.0.0
+summary: |
+  Domain that keeps songs, enrichment workflows, and async collaboration between Java and .NET services aligned through RabbitMQ.
+owners:
+  - tassosgomes
+  - tsgomes
+services:
+  - id: MusicService
+    name: Music Service
+    version: 1.0.0
+  - id: VideoEnricher
+    name: Video Enricher
+    version: 1.0.0
+events:
+  - id: SongCreatedEvent
+    name: Song Created Event
+    version: 1.0.0
+  - id: VideoFoundEvent
+    name: Video Found Event
+    version: 1.0.0
+---
+
+import Footer from '@catalog/components/footer.astro';
+
+## Overview
+
+The Music Platform synchronizes catalog metadata across two bounded contexts:
+
+- **Music Service (Java/Spring Boot):** exposes REST + SSE APIs, persists songs, and publishes the `music.song-created` event whenever the catalog changes.
+- **Video Enricher (.NET):** listens to new songs, scrapes YouTube metadata, and emits `music.video-found` once a matching video is found.
+
+The domain promotes strict contract governance with AsyncAPI specs generated straight from code (SpringWolf & Neuroglia). EventCatalog hosts the curated documentation plus the JSON/YAML snapshots captured in `specs/` via the `sync:asyncapi` script.
+
+## Event Flow
+
+1. A client registers a song through the Music Service REST API.
+2. Music Service publishes `SongCreatedEvent` (`music.song-created`).
+3. Video Enricher consumes the message, enriches metadata, and publishes `VideoFoundEvent` (`music.video-found`).
+4. Music Service ingests the enrichment event to finalize the song profile sent to downstream listeners via SSE.
+
+<Tiles>
+  <Tile icon="BoltIcon" title="AsyncAPI Snapshots" description="Specs are synced from the running services and stored under specs/music-service and specs/video-enricher" href="/docs/services/MusicService/1.0.0" />
+  <Tile icon="QueueListIcon" title="RabbitMQ Topology" description="Single topic exchange orchestrating music.song-created and music.video-found channels" href="/docs/channels/music.song-created/1.0.0" />
+  <Tile icon="UserGroupIcon" title="Cross-stack Team" description="Mixed Java + .NET team owning both services with shared contracts" href="/docs/domains/MusicPlatform/1.0.0" />
+</Tiles>
+
+<Footer />

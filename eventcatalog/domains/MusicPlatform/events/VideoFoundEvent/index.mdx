@@ -1,0 +1,37 @@
+---
+id: VideoFoundEvent
+name: Video Found Event
+version: 1.0.0
+summary: |
+  Emitted by the Video Enricher once YouTube metadata has been collected for a song so the Music Service can finalize its record.
+owners:
+  - tassosgomes
+producedBy:
+  - id: VideoEnricher
+    name: Video Enricher
+consumedBy:
+  - id: MusicService
+    name: Music Service
+channels:
+  - id: music.video-found
+    name: music.video-found
+specifications:
+  asyncapiPath: ../../../../specs/video-enricher/asyncapi.yaml
+---
+
+## Payload
+
+```json
+{
+  "songId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "videoUrl": "https://youtube.com/watch?v=abc123",
+  "views": 450003
+}
+```
+
+- `videoUrl` always points to the canonical YouTube video selected by the enrichment process.
+- `views` captures the snapshot at enrichment time; replays should treat it as informational only.
+
+## Contract Source
+
+This schema is managed via `Neuroglia.AsyncAPI` and synced by `npm run sync:asyncapi`. Review the [snapshot](../../../../specs/video-enricher/asyncapi.yaml) for bindings, channels and message metadata.

@@ -1,0 +1,185 @@
+{
+  "asyncapi": "3.0.0",
+  "info": {
+    "title": "Music Service AsyncAPI",
+    "version": "1.0.0",
+    "x-generator": "springwolf"
+  },
+  "defaultContentType": "application/json",
+  "servers": {
+    "rabbitmq": {
+      "protocol": "amqp"
+    }
+  },
+  "channels": {
+    "music.song-created": {
+      "messages": {
+        "com.music.service.domain.event.SongCreatedEvent": {
+          "$ref": "#/components/messages/com.music.service.domain.event.SongCreatedEvent"
+        }
+      }
+    },
+    "music.video-found": {
+      "messages": {
+        "com.music.service.domain.event.VideoFoundEvent": {
+          "$ref": "#/components/messages/com.music.service.domain.event.VideoFoundEvent"
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HeadersNotDocumented": {
+        "type": "object",
+        "properties": {},
+        "examples": [
+          {}
+        ]
+      },
+      "com.music.service.domain.event.SongCreatedEvent": {
+        "type": "object",
+        "properties": {
+          "artist": {
+            "type": "string"
+          },
+          "genre": {
+            "type": "string"
+          },
+          "releaseDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "songId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "examples": [
+          {
+            "artist": "string",
+            "genre": "string",
+            "releaseDate": "2015-07-20",
+            "songId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "title": "string"
+          }
+        ]
+      },
+      "com.music.service.domain.event.VideoFoundEvent": {
+        "type": "object",
+        "properties": {
+          "songId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "videoUrl": {
+            "type": "string"
+          },
+          "views": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "examples": [
+          {
+            "songId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "videoUrl": "string",
+            "views": 0
+          }
+        ]
+      }
+    },
+    "messages": {
+      "com.music.service.domain.event.SongCreatedEvent": {
+        "headers": {
+          "$ref": "#/components/schemas/HeadersNotDocumented"
+        },
+        "payload": {
+          "schemaFormat": "application/vnd.aai.asyncapi+json;version=3.0.0",
+          "schema": {
+            "$ref": "#/components/schemas/com.music.service.domain.event.SongCreatedEvent"
+          }
+        },
+        "name": "com.music.service.domain.event.SongCreatedEvent",
+        "title": "SongCreatedEvent",
+        "bindings": {
+          "amqp": {
+            "bindingVersion": "0.3.0"
+          }
+        }
+      },
+      "com.music.service.domain.event.VideoFoundEvent": {
+        "headers": {
+          "$ref": "#/components/schemas/HeadersNotDocumented"
+        },
+        "payload": {
+          "schemaFormat": "application/vnd.aai.asyncapi+json;version=3.0.0",
+          "schema": {
+            "$ref": "#/components/schemas/com.music.service.domain.event.VideoFoundEvent"
+          }
+        },
+        "name": "com.music.service.domain.event.VideoFoundEvent",
+        "title": "VideoFoundEvent",
+        "bindings": {
+          "amqp": {
+            "bindingVersion": "0.3.0"
+          }
+        }
+      }
+    }
+  },
+  "operations": {
+    "music.song-created_send_publishSongCreatedEvent": {
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/music.song-created"
+      },
+      "title": "music.song-created_send",
+      "description": "Event published when a new song is created",
+      "bindings": {
+        "amqp": {
+          "expiration": 0,
+          "cc": [],
+          "priority": 0,
+          "deliveryMode": 1,
+          "mandatory": false,
+          "timestamp": false,
+          "ack": false,
+          "bindingVersion": "0.3.0"
+        }
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/music.song-created/messages/com.music.service.domain.event.SongCreatedEvent"
+        }
+      ]
+    },
+    "music.video-found_receive_handleVideoFound": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/music.video-found"
+      },
+      "title": "music.video-found_receive",
+      "description": "Event consumed when a video metadata is available for a song",
+      "bindings": {
+        "amqp": {
+          "expiration": 0,
+          "cc": [],
+          "priority": 0,
+          "deliveryMode": 1,
+          "mandatory": false,
+          "timestamp": false,
+          "ack": false,
+          "bindingVersion": "0.3.0"
+        }
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/music.video-found/messages/com.music.service.domain.event.VideoFoundEvent"
+        }
+      ]
+    }
+  }
+}
