@@ -1,0 +1,12 @@
+{
+  "services": [
+    {
+      "name": "music-service",
+      "url": "http://music-service:8080/springwolf/docs"
+    },
+    {
+      "name": "video-enricher",
+      "url": "http://video-enricher:80/asyncapi/docs"
+    }
+  ]
+}
